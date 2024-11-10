@@ -1,7 +1,7 @@
 /**
- * @module Lens Scripting
- * @version 5.1.0
- * For Snapchat Version: 13.4
+ * @module Built-In
+ * @version 5.2.0
+ * For Snapchat Version: 13.11
 */
 interface ComponentNameMap {
     "AnimationPlayer": AnimationPlayer;
@@ -423,9 +423,15 @@ interface AnimationAsset extends Asset {
     */
     clearLayers(): void
     
+    /**
+    * Creates an event that will be triggered at a given time of this animation asset.
+    */
     createEvent(eventName: string, time: number): AnimationPropertyEventRegistration
     
-    deleteEvent(layerName: AnimationPropertyEventRegistration): void
+    /**
+    * Deletes an event that will be triggered at a given time.
+    */
+    deleteEvent(registration: AnimationPropertyEventRegistration): void
     
     /**
     * Delete the AnimationPropertyLayer named `layerName`.
@@ -533,79 +539,168 @@ declare namespace AnimationClip {
     */
     export function create(clipName: string): AnimationClip
     
+    /**
+    * Creates an animation clip from an animation asset.
+    */
     export function createFromAnimation(clipName: string, animation: AnimationAsset): AnimationClip
     
 
 }
 
+/**
+* A curve that contains a set of keyframes and can evaluate values at specific timestamps.
+*/
 interface AnimationCurve extends ScriptObject {
+    /**
+    * Adds keyframe to the curve.
+    */
     addKeyframe(frame: AnimationKeyFrame): void
     
+    /**
+    * Evaluate value of the curve at specific point.
+    */
     evaluate(time: number): number
     
+    /**
+    * Get an `AnimationKeyFrame` at the passed in index. 
+    */
     getKeyFrame(index: number): AnimationKeyFrame
     
+    /**
+    * Remove animation keyframe at specific timestamp. The closest keyframe will be deleted.
+    */
     removeKeyFrame(t: number): void
     
     /**
+    * The number of keyframes in the animation curve. 
+    
     * @readonly
     */
     keyFrameCount: number
     
 }
 declare namespace AnimationCurve {
+    /**
+    * Create new animation curve.
+    */
     export function create(): AnimationCurve
     
+    /**
+    * Creates curve based on CSS easing values.
+    */
     export function createEasingCurve(startValue: number, endValue: number, x1: number, y1: number, x2: number, y2: number): AnimationCurve
     
+    /**
+    * Create new animation keyframe
+    */
     export function createKeyFrame(): AnimationKeyFrame
     
 
 }
 
+/**
+* An asset that contains one or more animation curves. When evaluating multiple values, the values are selected from left to right in order. For example, for a vec3 containing x,y,z , it will correspond to track index 0, 1, 2 from left to right. 
+*/
 interface AnimationCurveTrack extends AnimationTrack {
+    /**
+    * Samples the track at the given time to get some value. 
+    */
     evaluateNumber(time: number): number
     
+    /**
+    * Samples the track at the given time to get some value. Returns 0 for non-existent channels.
+    */
     evaluateRotation(time: number): quat
     
+    /**
+    * Samples the track at the given time to get some value. Returns 0 for non-existent channels.
+    */
     evaluateVec2(time: number): vec2
     
+    /**
+    * Samples the track at the given time to get some value. Returns 0 for non-existent channels.
+    */
     evaluateVec3(time: number): vec3
     
+    /**
+    * Samples the track at the given time to get some value. Returns 0 for non-existent channels.
+    */
     evaluateVec4(time: number): vec4
     
+    /**
+    * Retrieves an AnimationCurve associated with the given key.
+    */
     getProperty(key: string): AnimationCurve
     
+    /**
+    * Returns an array of strings, which are the names of properties associated with the AnimationCurveTrack.
+    */
     getPropertyKeys(): string[]
     
+    /**
+    * Sets an AnimationCurve to a given key.
+    */
     setProperty(key: string, curve: AnimationCurve): void
     
 }
 
+/**
+* A keyframe with time and respective value. Could be added to Animation Curve.
+*/
 interface AnimationKeyFrame extends ScriptObject {
+    /**
+    * Incoming Control Point.
+    */
     inWeightPoint: vec2
     
     leftTangentType: TangentType
     
+    /**
+    * Outgoing Control Point.
+    */
     outWeightPoint: vec2
     
     rightTangentType: TangentType
     
+    /**
+    * Timestamp of the keyframe.
+    */
     time: number
     
+    /**
+    * Value of the respective timestamp.
+    */
     value: number
     
     weightedMode: WeightedMode
     
 }
 
+/**
+* How animation layers are blended.
+*/
 declare enum AnimationLayerBlendMode {
+    /**
+    * The higher layer will override all other animation layers.
+    */
     Default,
+    /**
+    * The higher layer will be added on top of other animation layers.
+    */
     Additive
 }
 
+/**
+* The method in which an Animation Layer should be scaled to other layers in an `AnimationClip`.
+*/
 declare enum AnimationLayerScaleMode {
+    /**
+    * Multiply the layers value.
+    */
     Multiply,
+    /**
+    * Add the layers value. 
+    */
     Additive
 }
 
@@ -711,20 +806,30 @@ interface AnimationPlayer extends Component {
     clips: AnimationClip[]
     
     /**
+    * Bind a function to listen to the specified events emitted by `AnimationAsset` events.
+    
     * @readonly
     */
     onEvent: event1<AnimationPlayerOnEventArgs, void>
     
 }
 
+/**
+* Args used for AnimationPlayer's event, which is triggered every time the animation playback passes the given time in the event.
+*/
 interface AnimationPlayerOnEventArgs extends ScriptObject {
     /**
+    * Name of the event to emit.
+    
     * @readonly
     */
     eventName: string
     
 }
 
+/**
+* The event registration returned by `AnimationAsset`'s `createEvent`.
+*/
 interface AnimationPropertyEventRegistration extends ScriptObject {
 }
 
@@ -796,10 +901,18 @@ declare namespace Audio {
 
 declare namespace Audio {
     /**
-    * @snapOsOnly
+    * The Playback Mode property of the `AudioComponent` used in Lenses targeting Spectacles. Spectacles default all Playback Modes to Low Power.
+    
+    * @wearableOnly
     */
     enum PlaybackMode {
+        /**
+        * Reduces power usage for the Spectacles device. but introduces latency in audio playback. Suitable for ambient sounds or background music where slight delays are acceptable.
+        */
         LowPower,
+        /**
+        * Minimizes audio playback latency but increases power usage for the Spectacles device. Recommended for audio requiring immediate auditory reaction, such as button press feedback.
+        */
         LowLatency
     }
 
@@ -874,7 +987,9 @@ interface AudioComponent extends Component {
     mixToSnap: boolean
     
     /**
-    * @snapOsOnly
+    * How the audio should be played back. Useful in optimizing audio in Spectacles.
+    
+    * @wearableOnly
     */
     playbackMode: Audio.PlaybackMode
     
@@ -1229,29 +1344,50 @@ interface BasicTransform extends ScriptObject {
 interface BinAsset extends Asset {
 }
 
+/**
+* The options used with `requestBitmoji2DResource`.
+*/
 interface Bitmoji2DOptions extends ScriptObject {
     /**
     * The pose id for the 2D Bitmoji.
     */
     poseId: string
     
+    /**
+    * The user which the Bitmoji should represent.
+    */
     user: SnapchatUser
     
 }
 declare namespace Bitmoji2DOptions {
+    /**
+    * Create the option.
+    */
     export function create(): Bitmoji2DOptions
     
 
 }
 
+/**
+* The `DynamicResource` of a 2D Bitmoji which can be loaded with `RemoteMediaModule`.
+*/
 interface Bitmoji2DResource extends DynamicResource {
 }
 
+/**
+* The options used with `requestBitmoji3DResource`
+*/
 interface Bitmoji3DOptions extends ScriptObject {
+    /**
+    * The user which the Bitmoji should represent.
+    */
     user: SnapchatUser
     
 }
 declare namespace Bitmoji3DOptions {
+    /**
+    * Create the option.
+    */
     export function create(): Bitmoji3DOptions
     
 
@@ -1277,6 +1413,9 @@ interface BitmojiModule extends Asset {
     */
     requestBitmoji3DResource(callback: (resource: Bitmoji3DResource) => void): void
     
+    /**
+    * Request the Bitmoji3D resource. 
+    */
     requestBitmoji3DResourceWithOptions(options: Bitmoji3DOptions, callback: (resource: Bitmoji3DResource) => void): void
     
 }
@@ -2130,12 +2269,127 @@ interface CameraBackEvent extends SceneEvent {
 }
 
 /**
+* An entity which provided metadata about the current camera image provided by CameraTextureProvider. Modeled after VideoFrame web API
+
+* @experimental
+
+* @exposesUserData
+
+* @wearableOnly
+*/
+interface CameraFrame extends ScriptObject {
+    /**
+    * The timestamp (in milliseconds) in which this frame was received.
+    
+    * @readonly
+    */
+    timestampMillis: number
+    
+}
+
+/**
 * Triggered when the device's front facing camera becomes active.
 */
 interface CameraFrontEvent extends SceneEvent {
 }
 
+/**
+* Provides access to the requested camera. Useful for requesting a specific camera on spectacles or requesting images from both cameras simultaneously. 
+
+* @experimental
+
+* @exposesUserData
+
+* @wearableOnly
+*/
+interface CameraModule extends Asset {
+    /**
+    * Returns a Texture whose provider is CameraTextureProvider which provides images from the requested camera ID.
+    */
+    requestCamera(request: CameraModule.CameraRequest): Texture
+    
+}
+declare namespace CameraModule {
+    /**
+    * Creates a camera request object.
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    export function createCameraRequest(): CameraModule.CameraRequest
+    
+
+}
+
+declare namespace CameraModule {
+    /**
+    * A handle to specify which camera on the Spectacles to request from. Used with `CameraModule.createCameraRequest`.
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    enum CameraId {
+        /**
+        * The default color camera. On Spectacles (2024), the default color camera is located on the left side of the device.
+        */
+        Default_Color,
+        /**
+        * The color camera on the left side of the device.
+        */
+        Left_Color,
+        /**
+        * The color camera on the right side of the device.
+        */
+        Right_Color
+    }
+
+}
+
+declare namespace CameraModule {
+    /**
+    * An object that is used to request the desired camera ID. It should be passed to the CameraModule to get back a camera texture.
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    interface CameraRequest extends ScriptObject {
+        /**
+        * The id of the camera to be accessed.
+        */
+        cameraId: CameraModule.CameraId
+        
+        /**
+        * The desired resolution of the received camera frame. If not specified, will use the system default resolution. It is recommended to use lowest resolution required for your use case to save on power and not overheat the device.
+        */
+        imageSmallerDimension?: number
+        
+    }
+
+}
+
 interface CameraTextureProvider extends TextureProvider {
+    /**
+    * Register a callback to be called whenever a new frame is received from the camera. On spectacles, the render rate is different (and typically higher) than the camera update rate, so this callback can be used to know when a new camera frame is available. This allows you to only do additional processing (like run a SnapML model) when a new frame is available instead of doing redundant work on each scene update event.
+    
+    * @readonly
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    onNewFrame: event1<CameraFrame, void>
+    
 }
 
 /**
@@ -2157,8 +2411,14 @@ interface Canvas extends Component {
     */
     pivot: vec2
     
+    /**
+    * The rendering sort order for the objects underneath this canvas.
+    */
     sortingType: Canvas.SortingType
     
+    /**
+    * The unit for the objects underneath this canvas.
+    */
     unitType: Canvas.UnitType
     
     /**
@@ -2169,17 +2429,38 @@ interface Canvas extends Component {
 }
 
 declare namespace Canvas {
+    /**
+    * Used by Canvas to set how an object is sorted during rendering.
+    */
     enum SortingType {
+        /**
+        * Sort based on their position in the hierarchy. This is the default.
+        */
         Hierarchy,
+        /**
+        * Sort based on their position in worldspace.
+        */
         Depth
     }
 
 }
 
 declare namespace Canvas {
+    /**
+    * Used by Canvas to set how an object is positioned.
+    */
     enum UnitType {
+        /**
+        * How objects are positioned outside of canvas.
+        */
         World,
+        /**
+        * The smallest addressable element on a display.
+        */
         Pixels,
+        /**
+        * Sometimes referred to as “Density Independent Pixels (dp)”, are abstractions of pixels that make it easier to deal with displays of different densities.
+        */
         Points
     }
 
@@ -2944,6 +3225,8 @@ interface Component extends SerializableWithUID {
     enabled: boolean
     
     /**
+    * The scene object this component is on.
+    
     * @readonly
     */
     sceneObject: SceneObject
@@ -3612,6 +3895,8 @@ interface DepthStencilRenderTargetProvider extends TextureProvider {
 */
 interface DepthTextureProvider extends TextureProvider {
     /**
+    * Get the depth at the given `point`.
+    
     * @exposesUserData
     */
     sampleDepthAtPoint(point: vec2): number
@@ -3622,6 +3907,9 @@ interface DepthTextureProvider extends TextureProvider {
 * Provides information about the device's camera.
 */
 interface DeviceCamera extends ScriptObject {
+    /**
+    * Given a point in device reference space, first converts the point to 3d camera space, using extrinsics, and then projects it to produce a point in normalized screen space (origin at top left).
+    */
     project(pointInDeviceReferenceNode: vec3): vec2
     
     /**
@@ -3676,6 +3964,15 @@ interface DeviceInfoSystem extends ScriptObject {
     getTrackingCamera(): DeviceCamera
     
     /**
+    * Get the DeviceCamera object for the given camera ID which provides intrinsics/extrinsics of the camera. 
+    
+    * @experimental
+    
+    * @wearableOnly
+    */
+    getTrackingCameraForId(cameraId: CameraModule.CameraId): DeviceCamera
+    
+    /**
     * Returns whether the current Lens is running in a desktop computer.
     */
     isDesktop(): boolean
@@ -3696,6 +3993,8 @@ interface DeviceInfoSystem extends ScriptObject {
     isSpectacles(): boolean
     
     /**
+    * Specifies the device pixel ratio. Can be used to set rendering at the real screen resolution.
+    
     * @readonly
     */
     screenScale: number
@@ -3896,6 +4195,9 @@ declare enum DeviceTrackingMode {
     World
 }
 
+/**
+* The module that provides `DeviceTracking` component.
+*/
 interface DeviceTrackingModule extends Asset {
 }
 
@@ -4324,24 +4626,6 @@ interface FaceFoundEvent extends FaceTrackingEvent {
 }
 
 /**
-* Controls the face image picker texture resource.
-* Can be accessed through [Texture.control](https://lensstudio.snapchat.com/api/lens-studio/Classes/Assets#texture--control) on a Face Image Picker texture.
-* For more information, see the [Face Image Picker Texture guide](https://lensstudio.snapchat.com/lens-studio/references/guides/lens-features/tracking/face/face-effects/face-image-picker-texture).
-*/
-interface FaceImagePickerTextureProvider extends ImagePickerTextureProvider {
-    /**
-    * If enabled, the selected image will be cropped to only show the face region.
-    */
-    cropToFace: boolean
-    
-    /**
-    * The FaceTextureProvider used to provide the face texture.
-    */
-    faceControl: FaceTextureProvider
-    
-}
-
-/**
 * Used with [FaceInsetVisual.faceRegion](https://lensstudio.snapchat.com/api/lens-studio/Classes/Components#FaceInsetVisual) for setting the face region to draw.
 */
 declare enum FaceInsetRegion {
@@ -4430,6 +4714,9 @@ interface FaceLostEvent extends FaceTrackingEvent {
 * Applies a face mask effect. See the [Face Mask Guide](https://lensstudio.snapchat.com/lens-studio/references/guides/lens-features/tracking/face/face-effects/face-mask) for more information.
 */
 interface FaceMaskVisual extends MaterialMeshVisual {
+    /**
+    * A custom mask that will be shown when the detected face's mouth is closed.
+    */
     customMaskOnMouthClosed: Texture
     
     /**
@@ -4437,6 +4724,9 @@ interface FaceMaskVisual extends MaterialMeshVisual {
     */
     faceIndex: number
     
+    /**
+    * Whether to hide the opacity mask when the detected face's mouth is closed.
+    */
     hidesMaskOnMouthClosed: boolean
     
     /**
@@ -4445,6 +4735,9 @@ interface FaceMaskVisual extends MaterialMeshVisual {
     */
     originalFaceIndex: number
     
+    /**
+    * Whether to swap the opacity mask when the detected face's mouth is closed.
+    */
     swapsMaskOnMouthClosed: boolean
     
     teethAlpha: number
@@ -4732,14 +5025,29 @@ declare enum FrustumCullMode {
     UserDefinedAABB
 }
 
+/**
+* Asset that contains Gaussian Splats. Used with `GaussianSplattingVisual`.
+*/
 interface GaussianSplattingAsset extends Asset {
+    /**
+    * The number of frames in the asset. Useful when animating through several Gaussian Splats. 
+    */
     getNumberOfFrames(): number
     
 }
 
+/**
+* Renders Gaussian Splats.
+*/
 interface GaussianSplattingVisual extends MaterialMeshVisual {
+    /**
+    * The current frame of the Gaussian Splat being rendered.
+    */
     activeFrame: number
     
+    /**
+    * The asset to be rendered.
+    */
     asset: GaussianSplattingAsset
     
 }
@@ -5139,35 +5447,66 @@ interface GeoPosition extends ScriptObject {
     
 }
 declare namespace GeoPosition {
+    /**
+    * Create a new GeoPosition. 
+    */
     export function create(): GeoPosition
     
 
 }
 
 /**
+* Detects gestures made by the hand using an ML algorithm.
+
 * @wearableOnly
 */
 interface GestureModule extends Asset {
+    /**
+    * Triggered when the left index finger from one hand touches the palm on the opposite hand. Currently, only the palm tap to the left hand is supported.
+    */
     getPalmTapDownEvent(handType: GestureModule.HandType): any
     
+    /**
+    * Triggered when the left index finger from one hand lifts from the palm on the opposite hand after touching. Currently, only the palm tap to the left hand is supported.
+    */
     getPalmTapUpEvent(handType: GestureModule.HandType): any
     
+    /**
+    * Triggered when the thumb and index fingers of the hand in view are pinched together.
+    */
     getPinchDownEvent(handType: GestureModule.HandType): any
     
+    /**
+    * Get the strength of a pinch between the thumb and index fingers of the hand in view.
+    */
     getPinchStrengthEvent(handType: GestureModule.HandType): any
     
+    /**
+    * Triggered when the thumb and index fingers of the hand in view are separated after being pinched together.
+    */
     getPinchUpEvent(handType: GestureModule.HandType): any
     
+    /**
+    * Triggered when the user has an intent to target a digital content in space.
+    */
     getTargetingDataEvent(handType: GestureModule.HandType): any
     
 }
 
 declare namespace GestureModule {
     /**
+    * The hand used in gesture detection with `GestureModule`.
+    
     * @wearableOnly
     */
     enum HandType {
+        /**
+        * The left hand.
+        */
         Left,
+        /**
+        * The right hand.
+        */
         Right
     }
 
@@ -5406,6 +5745,9 @@ interface HandTracking3DAsset extends Object3DAsset {
 
 */
 interface HapticFeedbackSystem extends ScriptObject {
+    /**
+    * Trigger a haptic feedback.
+    */
     hapticFeedback(type: HapticFeedbackType): void
     
 }
@@ -5487,28 +5829,50 @@ interface HintsComponent extends Component {
 }
 
 /**
+* Class responsible for detecting intersections between a virtual ray and real-world surfaces.
+
 * @wearableOnly
 */
 interface HitTestSession extends ScriptObject {
+    /**
+    * Perform a hit test.
+    */
     hitTest(rayStart: vec3, rayEnd: vec3, hitCallback: (hit: WorldQueryHitTestResult) => void): void
     
+    /**
+    * Reset the session.
+    */
     reset(): void
     
+    /**
+    * Start the sesion. Depth computation is started once a session is started. Multiple sessions access the same depth data, thus there is no additional cost. 
+    */
     start(): void
     
+    /**
+    * Stop the session. Depth computation stops once all hit test sessions are stopped.
+    */
     stop(): void
     
 }
 
 /**
+* Options for configuring a HitTestSession.
+
 * @wearableOnly
 */
 interface HitTestSessionOptions extends ScriptObject {
+    /**
+    * If true - a double exponential filter is applied to filter/smooth over multiple hit test results.
+    * By default the filter is set to `false`.
+    */
     filter: boolean
     
 }
 declare namespace HitTestSessionOptions {
     /**
+    * Create a new HitTestSessionOptions object.
+    
     * @wearableOnly
     */
     export function create(): HitTestSessionOptions
@@ -5558,7 +5922,13 @@ declare enum HorizontalOverflow {
     Shrink
 }
 
+/**
+* Triggered when a mouse hover event occurs. Only triggered in the `Preview` panel of Lens studio. Useful when working with Spectacles, where you can simulate the use of your hand to hover over an object. Does not get triggered on mobile.
+*/
 interface HoverEvent extends SceneObjectEvent {
+    /**
+    * The normalized screen position of the hover event.
+    */
     getHoverPosition(): vec2
     
 }
@@ -5591,34 +5961,6 @@ interface Image extends MaterialMeshVisual {
     * Where (-1, -1) is the bottom left corner, (0, 0) is the center, and (1, 1) is the top right corner of the Image.
     */
     pivot: vec2
-    
-}
-
-/**
-* Controls an image picker texture and UI.
-* Can be accessed through [Texture.control](https://lensstudio.snapchat.com/api/lens-studio/Classes/Components#Texture#control-textureprovider) on an Image Picker texture.
-* For more information, see the [Image Picker Texture](https://lensstudio.snapchat.com/lens-studio/references/guides/adding-content/2d/media-picker-texture) guide.
-*/
-interface ImagePickerTextureProvider extends MediaPickerTextureProvider {
-    /**
-    * Hides the image picker UI.
-    */
-    hideImagePicker(): void
-    
-    /**
-    * Binds a callback function for when the user selects or changes an image from the picker.
-    */
-    setImageChangedCallback(callback: () => void): void
-    
-    /**
-    * Shows the image picker UI.
-    */
-    showImagePicker(): void
-    
-    /**
-    * If enabled, the image picker UI will be shown automatically when the Lens starts.
-    */
-    autoShowImagePicker: boolean
     
 }
 
@@ -5882,22 +6224,37 @@ declare namespace LayerSet {
 
 }
 
+/**
+* A leaderboard which can contain scores and information about participating users. Accessible through the `LeaderboardModule` asset. 
+*/
 interface Leaderboard extends ScriptObject {
+    /**
+    * Get information about the leaderboard, such as who is on it.
+    */
     getLeaderboardInfo(options: Leaderboard.RetrievalOptions, successCallback: (othersInfo: Leaderboard.UserRecord[], currentUserInfo?: Leaderboard.UserRecord) => void, failureCallback: (status: number) => void): void
     
+    /**
+    * Submit a score to the leaderboard.
+    */
     submitScore(score: number, successCallback: (currentUserInfo: Leaderboard.UserRecord) => void, failureCallback: (status: number) => void): void
     
     /**
+    * The name of the leaderboard.
+    
     * @readonly
     */
     name: string
     
     /**
+    * How the leaderboard should be ordered.
+    
     * @readonly
     */
     orderingType: Leaderboard.OrderingType
     
     /**
+    * How long the leaderboard should last.
+    
     * @readonly
     */
     ttlSeconds: number
@@ -5905,11 +6262,23 @@ interface Leaderboard extends ScriptObject {
 }
 
 declare namespace Leaderboard {
+    /**
+    * The options for the leaderboard to be made.
+    */
     interface CreateOptions extends ScriptObject {
+        /**
+        * The name of the leaderboard.
+        */
         name: string
         
+        /**
+        * How the leaderboard should be ordered.
+        */
         orderingType: Leaderboard.OrderingType
         
+        /**
+        * How long the leaderboard should last.
+        */
         ttlSeconds: number
         
     }
@@ -5917,6 +6286,9 @@ declare namespace Leaderboard {
 }
 declare namespace Leaderboard {
     namespace CreateOptions {
+        /**
+        * Create the option.
+        */
         export function create(): Leaderboard.CreateOptions
         
     
@@ -5925,17 +6297,35 @@ declare namespace Leaderboard {
 }
 
 declare namespace Leaderboard {
+    /**
+    * Describes how the leaderboard should be ordered.
+    */
     enum OrderingType {
+        /**
+        * Results in a leaderboard where higher scores are better.
+        */
         Descending,
+        /**
+        * Results in a leaderboard where lower scores are better.
+        */
         Ascending
     }
 
 }
 
 declare namespace Leaderboard {
+    /**
+    * Describes the context for the leaderboard to be requested.
+    */
     interface RetrievalOptions extends ScriptObject {
+        /**
+        * The number of users to be retrieved.
+        */
         usersLimit: number
         
+        /**
+        * The type of users to be retrieved.
+        */
         usersType: Leaderboard.UsersType
         
     }
@@ -5943,6 +6333,9 @@ declare namespace Leaderboard {
 }
 declare namespace Leaderboard {
     namespace RetrievalOptions {
+        /**
+        * Creates the option.
+        */
         export function create(): Leaderboard.RetrievalOptions
         
     
@@ -5951,23 +6344,34 @@ declare namespace Leaderboard {
 }
 
 declare namespace Leaderboard {
+    /**
+    * Information for a user who submitted a score to the leaderboard.
+    */
     interface UserRecord extends ScriptObject {
         /**
+        * The numerical rank of the user in the global leaderboard.
+        
         * @readonly
         */
         globalExactRank?: number
         
         /**
+        * The percentile rank of the user in the global leaderboard.
+        
         * @readonly
         */
         globalRankPercentile: number
         
         /**
+        * The exact score of the user.
+        
         * @readonly
         */
         score: number
         
         /**
+        * The user which submitted the score. Display name and user name will not be available for global users.
+        
         * @readonly
         */
         snapchatUser: SnapchatUser
@@ -5977,16 +6381,28 @@ declare namespace Leaderboard {
 }
 
 declare namespace Leaderboard {
+    /**
+    * The type of user to be retrieved.
+    */
     enum UsersType {
+        /**
+        * A friend of the Lens viewer.
+        */
         Friends,
+        /**
+        * Both friend and non-friend of the Lens viewer.
+        */
         Global
     }
 
 }
 
+/**
+* A module which provides the `Leaderboard` api.
+*/
 interface LeaderboardModule extends Asset {
     /**
-    * @exposesUserData
+    * Gets a handle for a leaderboard.
     */
     getLeaderboard(options: Leaderboard.CreateOptions, successCallback: (leaderboard: Leaderboard) => void, failureCallback: (message: string) => void): void
     
@@ -6366,6 +6782,13 @@ interface LocationCloudStorageModule extends Asset {
     * Stores the specified `LocationAsset`.
     */
     storeLocation(location: LocationAsset, onStoredLocation: (persistedLocationId: string) => void, onError: (error: string) => void): void
+    
+    /**
+    * The active session used in the CloudStorageModule.
+    
+    * @wearableOnly
+    */
+    session: MultiplayerSession
     
 }
 
@@ -7049,35 +7472,63 @@ interface MapModule extends Asset {
     
 }
 
+/**
+* Used with `MappingSession` to describe the session to be created.
+*/
 interface MappingOptions extends ScriptObject {
+    /**
+    * Location hint for mapping. Leave unset or use `LocationAsset.getAROrigin()` for mapping in the current AR session frame. (planned future extension) Use a pre-existing location for incremental mapping.
+    */
     location: LocationAsset
     
+    /**
+    * Must be present to provide a sharing model for the location. Map storage is private to the user, or shared via ConnectedLensSession on the the module (Spectacles only).
+    */
     locationCloudStorageModule: LocationCloudStorageModule
     
+    /**
+    * Use case for mapping. Default "auto".
+    */
     policy: string
     
 }
 
+/**
+* Used with the `LocatedAtComponent` to map the current physical location.
+*/
 interface MappingSession extends ScriptObject {
+    /**
+    * Stops the current mapping session. No more events will be queued after this is called, although previously queued `onMapped` events may complete.
+    */
     cancel(): void
     
+    /**
+    * Require the `onMapped` event to fire. Fires as soon as minimum quality condition is met. Mapping can be left running and can be called multiple times (Spectacles only).
+    */
     checkpoint(): void
     
     /**
+    * Minimum conditions for trigerring onMapped via checkpoint() have been met - ie quality >= 1.
+    
     * @readonly
     */
     canCheckpoint: boolean
     
     /**
+    * Capacity used up for a map, goes from 0 to 1, where 1 will automatically trigger a checkpoint. Capacity will not reach 1.0 while quality <1.0. 1.0 is maximum capacity used, implemented per-device and per-mapping-policy.
+    
     * @readonly
     */
     capacityUsed: number
     
-    handheldMaximumSize: number
-    
-    handheldMinimumSize: number
+    /**
+    * @readonly
+    */
+    onCapacityUsedAtLimit: event0<void>
     
     /**
+    * Event fired when checkpoint is requested and then once quality is acceptable.
+    
     * @readonly
     */
     onMapped: event1<LocationAsset, void>
@@ -7085,26 +7536,47 @@ interface MappingSession extends ScriptObject {
     /**
     * @readonly
     */
+    onQualityAcceptable: event0<void>
+    
+    /**
+    * Progress towards an acceptable map, goes from 0 -> 1.0, where 1.0 is defined as 'Acceptable' given a specific mapping policy.
+    
+    * @readonly
+    */
     quality: number
     
+    /**
+    * Current throttling of mapping process, i.e. how much effort the device is putting into it. (planned future extension)
+    */
     throttling: MappingSession.MappingThrottling
-    
-    wearableMaximumSize: number
-    
-    wearableMinimumSize: number
     
 }
 
 declare namespace MappingSession {
     enum MappingThrottling {
+        /**
+        * A default mapping method. Equivalent to 'Foreground' when mapping new and 'Background' when incremental mapping.
+        */
         Auto,
+        /**
+        * Maximum CPU usage to mapping.
+        */
         Foreground,
+        /**
+        * Minimum CPU usage while still mapping.
+        */
         Background,
+        /**
+        * No CPU usage; temporarily pause.
+        */
         Off
     }
 
 }
 
+/**
+* A texture of the map at the given location of a `LocationAsset`.
+*/
 interface MapTextureProvider extends TextureProvider {
     /**
     * The location asset associated with the `MapTextureProvider`.
@@ -7929,6 +8401,11 @@ declare class MeshBuilder {
     isValid(): boolean
     
     /**
+    * Add bones to the mesh.
+    */
+    setBones(bones: string[], inverseMatrices: mat4[]): void
+    
+    /**
     * Sets data for a single vertex at vertex index `index`.
     */
     setVertexInterleaved(index: number, verts: number[]): void
@@ -7948,6 +8425,14 @@ declare class MeshBuilder {
     */
     topology: MeshTopology
     
+}
+declare namespace MeshBuilder {
+    /**
+    * Create a MeshBuilder from a RenderMesh.
+    */
+    export function createFromMesh(mesh: RenderMesh): MeshBuilder
+    
+
 }
 
 /**
@@ -8290,56 +8775,105 @@ interface MLComponent extends Component {
 }
 
 /**
+* A Motion Controller allows to communicate motion data and touch events from an external device to Spectacles, as well as haptic feedback requests from Spectacles to an external device. Currently, the API supports Mobile Controller only, allowing one motion controller to be connected at a time. Developers use the Motion Controller API through the `Asset.MotionControllerModule` in Lens Studio.
+
+
 * @wearableOnly
 */
 interface MotionController extends ScriptObject {
+    /**
+    * Get the current motion type being provided by the motion controller.
+    
+    */
     getMotionState(): MotionController.MotionType
     
+    /**
+    * Returns the size of the touchpad in centimeters. Returns `null` if motion controller is not connected.
+    */
     getTouchpadPhysicalSize(): vec2 | undefined
     
+    /**
+    * Returns the size of the touchpad in points. Returns `null` if motion controller is not connected.
+    */
     getTouchpadPointSize(): vec2 | undefined
     
+    /**
+    * Returns the tracking quality state of the motion controller, indicating whether the data received from it is accurate or not.
+    */
     getTrackingQuality(): MotionController.TrackingQuality
     
+    /**
+    * Returns the last known position of the motion controller in world coordinate space. If no motion data has been received, or the motion type is set to `3DOF` or `NoMotion`, this value will be `null`.
+    */
     getWorldPosition(): vec3
     
+    /**
+    * Returns the last known rotation of the motion controller in world coordinate space. If no motion data has been received or the motion type is set to `NoMotion`, this value will be `null`.
+    */
     getWorldRotation(): quat
     
+    /**
+    * Invokes haptic feedback on the controller using a preset of options, if supported.
+    */
     invokeHaptic(hapticRequest: MotionController.HapticRequest): void
     
+    /**
+    * Indicates whether the selected controller is currently available to use. This means that the device is connected, properly set up, and transmitting data.
+    */
     isControllerAvailable(): boolean
     
     /**
+    * An event triggered when the selected controller's state changes between being available for use (connected, properly set up, and transmitting data) and otherwise.
+    
     * @readonly
     */
     onControllerStateChange: event1<boolean, void>
     
     /**
+    * Event triggered when the motion type of the controller changes.
+    
+    
     * @readonly
     */
     onMotionTypeChange: event1<MotionController.MotionType, void>
     
     /**
+    * Triggered by a touch event from the controller. 
+    * Arguments: 
+    * - **normalizedPosition:** A normalized 2D position of the user's touch on the touchpad. The coordinates range from ([0-1], [0-1]), where (0,0) represents the top-left and (1,1) represents the bottom-right.
+    * - **touchId:** Returns the unique identifier of the specific touch; useful for distinguishing between multiple simultaneous touches.
+    * - **timestampMilliseconds:** Returns the timestamp, in milliseconds, of when the touch event occurred.
+    * - **phase:** The current state of the touch.
+    
     * @readonly
     */
     onTouchEvent: event4<vec2, number, number, MotionController.TouchPhase, void>
     
     /**
+    * Triggered when the touchpad size is changed. Custom controllers can adjust the interactable area of the touchpad.
+    
     * @readonly
     */
     onTouchpadSizeChange: event2<vec2, vec2, void>
     
     /**
+    * Event triggered when the tracking quality state of the motion controller changes.
+    
     * @readonly
     */
     onTrackingQualityChange: event1<MotionController.TrackingQuality, void>
     
     /**
+    * An event is triggered when new motion data becomes available. The arguments are the world position and the world rotation of the motion controller, respectively.
+    
     * @readonly
     */
     onTransformEvent: event2<vec3, quat, void>
     
     /**
+    * Returns the configuration of the motion controller. 
+    
+    
     * @readonly
     */
     options: MotionController.MotionControllerOptions
@@ -8348,16 +8882,43 @@ interface MotionController extends ScriptObject {
 
 declare namespace MotionController {
     /**
+    * Defines a set of haptic feedback patterns that can be requested.
+    
+    
     * @wearableOnly
     */
     enum HapticFeedback {
+        /**
+        * Default value, same as `Tick`.
+        */
         Default,
+        /**
+        * A brief, single haptic effect that simulates a ticking or clicking sensation
+        */
         Tick,
+        /**
+        * A subtle haptic effect used to confirm a selection or interaction.
+        */
         Select,
+        /**
+        * A positive haptic pattern indicating that an action was completed successfully.
+        */
         Success,
+        /**
+        * A negative haptic pattern indicating that an action failed or encountered an issue.
+        */
         Error,
+        /**
+        * A gentle vibration for less intense feedback.
+        */
         VibrationLow,
+        /**
+        * A moderate vibration for standard feedback intensity.
+        */
         VibrationMedium,
+        /**
+        * A strong vibration for more pronounced feedback.
+        */
         VibrationHigh
     }
 
@@ -8365,11 +8926,19 @@ declare namespace MotionController {
 
 declare namespace MotionController {
     /**
+    * Describes a request for haptic feedback.
+    
     * @wearableOnly
     */
     interface HapticRequest extends ScriptObject {
+        /**
+        * How long the haptic request should last for.
+        */
         duration: number
         
+        /**
+        * A type of haptic feedback.
+        */
         hapticFeedback: MotionController.HapticFeedback
         
     }
@@ -8378,6 +8947,8 @@ declare namespace MotionController {
 declare namespace MotionController {
     namespace HapticRequest {
         /**
+        * Create an instance of the Haptic Request.
+        
         * @wearableOnly
         */
         export function create(): MotionController.HapticRequest
@@ -8389,11 +8960,20 @@ declare namespace MotionController {
 
 declare namespace MotionController {
     /**
+    * Settings for configuring a motion controller.
+    
+    
     * @wearableOnly
     */
     interface MotionControllerOptions extends ScriptObject {
+        /**
+        * The unique identifier to connect to a motion controller. The only value currently supported is empty (`""`), which will result in the Mobile Controller being requested.
+        */
         controllerId: string
         
+        /**
+        * Represents the motion type of the motion controller.
+        */
         motionType: MotionController.MotionType
         
     }
@@ -8402,17 +8982,34 @@ declare namespace MotionController {
 
 declare namespace MotionController {
     /**
+    * Enum for describing the motion type.
+    
     * @wearableOnly
     */
     enum MotionType {
+        /**
+        * Transform of this object does not change.
+        
+        */
         NoMotion,
+        /**
+        * Only the rotation of the object is changed.
+        
+        */
         ThreeDoF,
+        /**
+        * Both position and rotation of the object are changed.
+        
+        */
         SixDoF
     }
 
 }
 
 declare namespace MotionController {
+    /**
+    * Settings for configuring a motion controller.
+    */
     interface Options {
     }
 
@@ -8420,6 +9017,8 @@ declare namespace MotionController {
 declare namespace MotionController {
     namespace Options {
         /**
+        * Create a new options object.
+        
         * @wearableOnly
         */
         export function create(): MotionController.MotionControllerOptions
@@ -8431,12 +9030,26 @@ declare namespace MotionController {
 
 declare namespace MotionController {
     /**
+    * Enum that defines a current state of a touch interaction with the touchpad of the motion controller.
+    
     * @wearableOnly
     */
     enum TouchPhase {
+        /**
+        * Indicates that a touch event has started. This is triggered when the user initially touches the interactive area.
+        */
         Began,
+        /**
+        * Indicates that the touch event has moved. This is triggered when the user drags or slides their finger across the interactive area.
+        */
         Moved,
+        /**
+        * Indicates that the touch event has ended. This occurs when the user lifts their finger off the interactive area, completing the touch interaction.
+        */
         Ended,
+        /**
+        * Indicates that the touch event was interrupted or canceled, typically due to an error or the touch being outside the interactive area.
+        */
         Canceled
     }
 
@@ -8444,20 +9057,39 @@ declare namespace MotionController {
 
 declare namespace MotionController {
     /**
+    * Describes Motion Controller tracking quality state, whether the data received from the Motion Controller is accurate or not.
+    
+    
     * @wearableOnly
     */
     enum TrackingQuality {
+        /**
+        * The tracking quality is unknown. This usually means that the controller is not available.
+        */
         Unknown,
+        /**
+        * Transform tracking of the Motion Controller is providing optimal results.
+        */
         Normal,
+        /**
+        * Transform tracking of the Motion Controller is providing limited quality results.
+        
+        */
         Limited
     }
 
 }
 
 /**
+* A Lens Studio module that provides access to Motion Controller.
+
 * @wearableOnly
 */
 interface MotionControllerModule extends ScriptObject {
+    /**
+    * Get the Motion Controller with the provided options. If no options are provided, default value will be used. 
+    
+    */
     getController(options: MotionController.MotionControllerOptions): MotionController
     
 }
@@ -8609,6 +9241,9 @@ interface ObjectPrefab extends Asset {
     */
     instantiate(parent: SceneObject): SceneObject
     
+    /**
+    * Instantiate a prefab asynchronously.
+    */
     instantiateAsync(parent: SceneObject, onSuccess: (sceneObject: SceneObject) => void, onFailure: (error: string) => void, onProgress: (progress: number) => void): void
     
 }
@@ -9009,10 +9644,14 @@ interface OverlapStayEventArgs extends ScriptObject {
 }
 
 /**
+* The arguments of the PalmTapDown event on `GestureModule`
+
 * @wearableOnly
 */
 interface PalmTapDownArgs extends ScriptObject {
     /**
+    * The module's confidence in detecting the gesture.
+    
     * @readonly
     */
     confidence: number
@@ -9020,10 +9659,14 @@ interface PalmTapDownArgs extends ScriptObject {
 }
 
 /**
+* The arguments of the PalmTapUp event on `GestureModule`
+
 * @wearableOnly
 */
 interface PalmTapUpArgs extends ScriptObject {
     /**
+    * The module's confidence in detecting the gesture.
+    
     * @readonly
     */
     confidence: number
@@ -9432,10 +10075,14 @@ declare namespace Physics {
 }
 
 /**
+* The arguments of the PinchDown event on `GestureModule`
+
 * @wearableOnly
 */
 interface PinchDownArgs extends ScriptObject {
     /**
+    * The orientation of the detected gesture.
+    
     * @readonly
     */
     palmOrientation: vec3
@@ -9443,10 +10090,14 @@ interface PinchDownArgs extends ScriptObject {
 }
 
 /**
+* The arguments of the PinchStrength event on `GestureModule`
+
 * @wearableOnly
 */
 interface PinchStrengthArgs extends ScriptObject {
     /**
+    * The pinch strength of the detected gesture.
+    
     * @readonly
     */
     strength: number
@@ -9454,10 +10105,14 @@ interface PinchStrengthArgs extends ScriptObject {
 }
 
 /**
+* The arguments of the PinchUp event on `GestureModule`
+
 * @wearableOnly
 */
 interface PinchUpArgs extends ScriptObject {
     /**
+    * The orientation of the detected gesture.
+    
     * @readonly
     */
     palmOrientation: vec3
@@ -9548,9 +10203,21 @@ interface PitchShifterBuilder extends ScriptObject {
     
 }
 
+/**
+* Used with `AnimationClip` to describe how the clip should be played.
+*/
 declare enum PlaybackMode {
+    /**
+    * Plays forward once.
+    */
     Single,
+    /**
+    * Repeated play the clip forward from the beginning to the end.
+    */
     Loop,
+    /**
+    * Plays the clip forward once, then backward once, repeatedly.
+    */
     PingPong
 }
 
@@ -9559,6 +10226,15 @@ declare enum PlaybackMode {
 
 */
 interface PointCloud extends ScriptObject {
+    /**
+    * The confidence level of the point cloud.
+    
+    * @readonly
+    
+    * @experimental
+    */
+    confidences: number[]
+    
     /**
     * A list of numeric identifiers for each unique 3D point in the cloud.
     
@@ -10159,27 +10835,52 @@ interface RemoteReferenceAsset extends Asset {
 }
 
 /**
-* @snapOsOnly
+* A http request which can be sent using the `RemoteServiceModule`.
+
+* @wearableOnly
 */
 interface RemoteServiceHttpRequest extends ScriptObject {
+    /**
+    * Get the header of the http request.
+    */
     getHeader(name: string): string
     
+    /**
+    * Set the header of the http request.
+    */
     setHeader(name: string, value: string): void
     
+    /**
+    * The body of the http request.
+    */
     body: (Uint8Array|number[]|string)
     
+    /**
+    * The content type of the http request.
+    */
     contentType: string
     
+    /**
+    * The headers of the http request.
+    */
     headers: object
     
+    /**
+    * The method which should be used to send this http request.
+    */
     method: RemoteServiceHttpRequest.HttpRequestMethod
     
+    /**
+    * The URL which this http request should point to.
+    */
     url: string
     
 }
 declare namespace RemoteServiceHttpRequest {
     /**
-    * @snapOsOnly
+    * Create a new http request.
+    
+    * @wearableOnly
     */
     export function create(): RemoteServiceHttpRequest
     
@@ -10188,41 +10889,71 @@ declare namespace RemoteServiceHttpRequest {
 
 declare namespace RemoteServiceHttpRequest {
     /**
-    * @snapOsOnly
+    * The http method which should be used to send this http request.
+    
+    * @wearableOnly
     */
     enum HttpRequestMethod {
+        /**
+        * Get method.
+        */
         Get,
+        /**
+        * Post method.
+        */
         Post,
+        /**
+        * Put method.
+        */
         Put,
+        /**
+        * Delete method.
+        */
         Delete
     }
 
 }
 
 /**
-* @snapOsOnly
+* The response returned by a `RemoteServiceHttpRequest` call.
+
+* @wearableOnly
 */
 interface RemoteServiceHttpResponse extends ScriptObject {
+    /**
+    * Get the result as a `DynamicResource` to be used with `RemoteMediaModule`.
+    */
     asResource(): DynamicResource
     
+    /**
+    * Get the header of the response.
+    */
     getHeader(name: string): string
     
     /**
+    * The body of the response.
+    
     * @readonly
     */
     body: string
     
     /**
+    * the content type of the response.
+    
     * @readonly
     */
     contentType: string
     
     /**
+    * The headers of the response.
+    
     * @readonly
     */
     headers: object
     
     /**
+    * The http response status code.
+    
     * @readonly
     */
     statusCode: number
@@ -10231,14 +10962,18 @@ interface RemoteServiceHttpResponse extends ScriptObject {
 
 interface RemoteServiceModule extends Asset {
     /**
-    * @snapOsOnly
+    * Get a `DynamicResource` to be used with `RemoteMediaModule` from `mediaUrl`.
+    
+    * @wearableOnly
     */
     makeResourceFromUrl(mediaUrl: string): DynamicResource
     
     performApiRequest(request: RemoteApiRequest, onApiResponse: (response: RemoteApiResponse) => void): void
     
     /**
-    * @snapOsOnly
+    * Perform an http request described by `RemoteServiceHttpRequest`.
+    
+    * @wearableOnly
     */
     performHttpRequest(requestOptions: RemoteServiceHttpRequest, onHttpResponse: (response: RemoteServiceHttpResponse) => void): void
     
@@ -10249,6 +10984,16 @@ interface RemoteServiceModule extends Asset {
 * See also: [RenderMeshVisual](https://lensstudio.snapchat.com/api/lens-studio/Classes/Components#RenderMeshVisual).
 */
 interface RenderMesh extends Asset {
+    /**
+    * Get the bone inverse matrices on the mesh
+    */
+    extractBoneInverseMatrices(): mat4[]
+    
+    /**
+    * Get the bone names on the mesh.
+    */
+    extractBoneNames(): string[]
+    
     /**
     * Returns a list of indices of each vertices in the RenderMesh.
     */
@@ -10962,6 +11707,9 @@ interface ScreenTransform extends Component {
     */
     anchors: Rect
     
+    /**
+    * Display the debug view of the screen transform.
+    */
     enableDebugRendering: boolean
     
     /**
@@ -11221,6 +11969,9 @@ interface Skin extends Component {
     */
     getSkinBoneNames(): string[]
     
+    /**
+    * Associate the Scene Object `bone` with `boneName`
+    */
     setSkinBone(boneName: string, bone: SceneObject): void
     
 }
@@ -11310,11 +12061,15 @@ interface SnapchatUser extends ScriptObject {
 */
 interface SnapchatUserBirthday {
     /**
+    * The day of the month (1-31).
+    
     * @readonly
     */
     day: number
     
     /**
+    * The month of the year (1-12).
+    
     * @readonly
     */
     month: number
@@ -11720,11 +12475,29 @@ interface SurfaceOptions extends ScriptObject {
 interface SurfaceTrackingResetEvent extends SceneEvent {
 }
 
+/**
+* Used with `AnimationKeyFrame`.
+*/
 declare enum TangentType {
+    /**
+    * A tangent with 0 slope.
+    */
     Const,
+    /**
+    * A tangent where the left and right side are not connected.
+    */
     Broken,
+    /**
+    * A tangent which value is clamped, as in a spline.
+    */
     Clamped,
+    /**
+    * A tangent where the angle and weight of both the left and right side can be changed freely. This is the default value.
+    */
     Free,
+    /**
+    * A slope defined by a linear tangent. 
+    */
     Linear
 }
 
@@ -12244,6 +13017,9 @@ interface Text extends BaseMeshVisual {
     */
     backgroundSettings: BackgroundSettings
     
+    /**
+    * Overrides the capitalization of the text rendered.
+    */
     capitilizationOverride: CapitilizationOverride
     
     /**
@@ -12346,6 +13122,11 @@ interface Text extends BaseMeshVisual {
     touchHandler: InteractionComponent
     
     /**
+    * Whether the text should be visible in both front and back.
+    */
+    twoSided: boolean
+    
+    /**
     * Controls how text should be handled when it goes past the vertical boundaries defined by the world space rect or ScreenTransform.
     
     */
@@ -12368,6 +13149,9 @@ interface Text3D extends MaterialMeshVisual {
     */
     split(): RenderMeshVisual[]
     
+    /**
+    * Overrides the capitalization of the text rendered.
+    */
     capitilizationOverride: CapitilizationOverride
     
     /**
@@ -13572,6 +14356,23 @@ interface UpdateEvent extends SceneEvent {
     */
     getDeltaTime(): number
     
+}
+
+/**
+* Provides a render object of the upper body, without the head. Unlike `BodyMesh` which handles the whole body, this model is optimized to work better with `FaceMesh` and selfie use cases.
+*/
+interface UpperBodyRenderObjectProvider extends RenderObjectProvider {
+    /**
+    * The index of the face whose upper body you want to render. The first face detected is `0`, the second `1`, and so on.
+    */
+    faceIndex: number
+    
+}
+
+/**
+* An asset containing the upper body tracker. It is optimized to track with the face and in selfie use cases.
+*/
+interface UpperBodyTrackingAsset extends Object3DAsset {
 }
 
 /**
@@ -15398,10 +16199,14 @@ interface WorldOptions extends ScriptObject {
 }
 
 /**
+* The result of the hitTest method call. This includes the world position of the hit, the world normal of the hit. Returns `null` if no intersection with environment was detected.
+
 * @wearableOnly
 */
 interface WorldQueryHitTestResult extends ScriptObject {
     /**
+    * A normal of the surface at the position where the ray intersects with the environment.
+    
     * @readonly
     
     * @wearableOnly
@@ -15409,6 +16214,8 @@ interface WorldQueryHitTestResult extends ScriptObject {
     normal: vec3
     
     /**
+    * A position where ray intersects with the environment.
+    
     * @readonly
     
     * @wearableOnly
@@ -15418,15 +16225,21 @@ interface WorldQueryHitTestResult extends ScriptObject {
 }
 
 /**
+* Provides access to WorldQuery api which performs hit test for real surfaces to sample the depth and normal at a certain location.
+
 * @wearableOnly
 */
 interface WorldQueryModule extends Asset {
     /**
+    * Create a HitTestSession with default options.
+    
     * @wearableOnly
     */
     createHitTestSession(): HitTestSession
     
     /**
+    * Create a new HitTestSession with options. 
+    
     * @wearableOnly
     */
     createHitTestSessionWithOptions(options: HitTestSessionOptions): HitTestSession
@@ -15656,14 +16469,29 @@ declare namespace _palette {
     */
     let AnimationClip: AnimationClip
     
+    /**
+    * A curve that contains a set of keyframes and can evaluate values at specific timestamps.
+    */
     let AnimationCurve: AnimationCurve
     
+    /**
+    * An asset that contains one or more animation curves. When evaluating multiple values, the values are selected from left to right in order. For example, for a vec3 containing x,y,z , it will correspond to track index 0, 1, 2 from left to right. 
+    */
     let AnimationCurveTrack: AnimationCurveTrack
     
+    /**
+    * A keyframe with time and respective value. Could be added to Animation Curve.
+    */
     let AnimationKeyFrame: AnimationKeyFrame
     
+    /**
+    * How animation layers are blended.
+    */
     let AnimationLayerBlendMode: AnimationLayerBlendMode
     
+    /**
+    * The method in which an Animation Layer should be scaled to other layers in an `AnimationClip`.
+    */
     let AnimationLayerScaleMode: AnimationLayerScaleMode
     
     /**
@@ -15671,8 +16499,14 @@ declare namespace _palette {
     */
     let AnimationPlayer: AnimationPlayer
     
+    /**
+    * Args used for AnimationPlayer's event, which is triggered every time the animation playback passes the given time in the event.
+    */
     let AnimationPlayerOnEventArgs: AnimationPlayerOnEventArgs
     
+    /**
+    * The event registration returned by `AnimationAsset`'s `createEvent`.
+    */
     let AnimationPropertyEventRegistration: AnimationPropertyEventRegistration
     
     /**
@@ -15701,7 +16535,9 @@ declare namespace _palette {
     let Audio_DistanceCurveType: Audio.DistanceCurveType
     
     /**
-    * @snapOsOnly
+    * The Playback Mode property of the `AudioComponent` used in Lenses targeting Spectacles. Spectacles default all Playback Modes to Low Power.
+    
+    * @wearableOnly
     */
     let Audio_PlaybackMode: Audio.PlaybackMode
     
@@ -15792,10 +16628,19 @@ declare namespace _palette {
     */
     let BinAsset: BinAsset
     
+    /**
+    * The options used with `requestBitmoji2DResource`.
+    */
     let Bitmoji2DOptions: Bitmoji2DOptions
     
+    /**
+    * The `DynamicResource` of a 2D Bitmoji which can be loaded with `RemoteMediaModule`.
+    */
     let Bitmoji2DResource: Bitmoji2DResource
     
+    /**
+    * The options used with `requestBitmoji3DResource`
+    */
     let Bitmoji3DOptions: Bitmoji3DOptions
     
     /**
@@ -15912,9 +16757,53 @@ declare namespace _palette {
     let CameraBackEvent: CameraBackEvent
     
     /**
+    * An entity which provided metadata about the current camera image provided by CameraTextureProvider. Modeled after VideoFrame web API
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    let CameraFrame: CameraFrame
+    
+    /**
     * Triggered when the device's front facing camera becomes active.
     */
     let CameraFrontEvent: CameraFrontEvent
+    
+    /**
+    * Provides access to the requested camera. Useful for requesting a specific camera on spectacles or requesting images from both cameras simultaneously. 
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    let CameraModule: CameraModule
+    
+    /**
+    * A handle to specify which camera on the Spectacles to request from. Used with `CameraModule.createCameraRequest`.
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    let CameraModule_CameraId: CameraModule.CameraId
+    
+    /**
+    * An object that is used to request the desired camera ID. It should be passed to the CameraModule to get back a camera texture.
+    
+    * @experimental
+    
+    * @exposesUserData
+    
+    * @wearableOnly
+    */
+    let CameraModule_CameraRequest: CameraModule.CameraRequest
     
     let CameraTextureProvider: CameraTextureProvider
     
@@ -15923,8 +16812,14 @@ declare namespace _palette {
     */
     let Canvas: Canvas
     
+    /**
+    * Used by Canvas to set how an object is sorted during rendering.
+    */
     let Canvas_SortingType: Canvas.SortingType
     
+    /**
+    * Used by Canvas to set how an object is positioned.
+    */
     let Canvas_UnitType: Canvas.UnitType
     
     /**
@@ -16235,6 +17130,9 @@ declare namespace _palette {
     */
     let DeviceTrackingMode: DeviceTrackingMode
     
+    /**
+    * The module that provides `DeviceTracking` component.
+    */
     let DeviceTrackingModule: DeviceTrackingModule
     
     /**
@@ -16291,13 +17189,6 @@ declare namespace _palette {
     * Triggered when a new face is detected and starts being tracked.
     */
     let FaceFoundEvent: FaceFoundEvent
-    
-    /**
-    * Controls the face image picker texture resource.
-    * Can be accessed through [Texture.control](https://lensstudio.snapchat.com/api/lens-studio/Classes/Assets#texture--control) on a Face Image Picker texture.
-    * For more information, see the [Face Image Picker Texture guide](https://lensstudio.snapchat.com/lens-studio/references/guides/lens-features/tracking/face/face-effects/face-image-picker-texture).
-    */
-    let FaceImagePickerTextureProvider: FaceImagePickerTextureProvider
     
     /**
     * Used with [FaceInsetVisual.faceRegion](https://lensstudio.snapchat.com/api/lens-studio/Classes/Components#FaceInsetVisual) for setting the face region to draw.
@@ -16394,8 +17285,14 @@ declare namespace _palette {
     */
     let FrustumCullMode: FrustumCullMode
     
+    /**
+    * Asset that contains Gaussian Splats. Used with `GaussianSplattingVisual`.
+    */
     let GaussianSplattingAsset: GaussianSplattingAsset
     
+    /**
+    * Renders Gaussian Splats.
+    */
     let GaussianSplattingVisual: GaussianSplattingVisual
     
     /**
@@ -16421,11 +17318,15 @@ declare namespace _palette {
     let GeoPosition: GeoPosition
     
     /**
+    * Detects gestures made by the hand using an ML algorithm.
+    
     * @wearableOnly
     */
     let GestureModule: GestureModule
     
     /**
+    * The hand used in gesture detection with `GestureModule`.
+    
     * @wearableOnly
     */
     let GestureModule_HandType: GestureModule.HandType
@@ -16493,11 +17394,15 @@ declare namespace _palette {
     let HintsComponent: HintsComponent
     
     /**
+    * Class responsible for detecting intersections between a virtual ray and real-world surfaces.
+    
     * @wearableOnly
     */
     let HitTestSession: HitTestSession
     
     /**
+    * Options for configuring a HitTestSession.
+    
     * @wearableOnly
     */
     let HitTestSessionOptions: HitTestSessionOptions
@@ -16514,6 +17419,9 @@ declare namespace _palette {
     */
     let HorizontalOverflow: HorizontalOverflow
     
+    /**
+    * Triggered when a mouse hover event occurs. Only triggered in the `Preview` panel of Lens studio. Useful when working with Spectacles, where you can simulate the use of your hand to hover over an object. Does not get triggered on mobile.
+    */
     let HoverEvent: HoverEvent
     
     /**
@@ -16528,13 +17436,6 @@ declare namespace _palette {
     * See the [Image guide](https://lensstudio.snapchat.com/lens-studio/references/guides/adding-content/2d/image) for more information.
     */
     let Image: Image
-    
-    /**
-    * Controls an image picker texture and UI.
-    * Can be accessed through [Texture.control](https://lensstudio.snapchat.com/api/lens-studio/Classes/Components#Texture#control-textureprovider) on an Image Picker texture.
-    * For more information, see the [Image Picker Texture](https://lensstudio.snapchat.com/lens-studio/references/guides/adding-content/2d/media-picker-texture) guide.
-    */
-    let ImagePickerTextureProvider: ImagePickerTextureProvider
     
     /**
     * Builds InputPlaceHolders for MLComponent.
@@ -16585,18 +17486,39 @@ declare namespace _palette {
     */
     let LayerSet: LayerSet
     
+    /**
+    * A leaderboard which can contain scores and information about participating users. Accessible through the `LeaderboardModule` asset. 
+    */
     let Leaderboard: Leaderboard
     
+    /**
+    * The options for the leaderboard to be made.
+    */
     let Leaderboard_CreateOptions: Leaderboard.CreateOptions
     
+    /**
+    * Describes how the leaderboard should be ordered.
+    */
     let Leaderboard_OrderingType: Leaderboard.OrderingType
     
+    /**
+    * Describes the context for the leaderboard to be requested.
+    */
     let Leaderboard_RetrievalOptions: Leaderboard.RetrievalOptions
     
+    /**
+    * Information for a user who submitted a score to the leaderboard.
+    */
     let Leaderboard_UserRecord: Leaderboard.UserRecord
     
+    /**
+    * The type of user to be retrieved.
+    */
     let Leaderboard_UsersType: Leaderboard.UsersType
     
+    /**
+    * A module which provides the `Leaderboard` api.
+    */
     let LeaderboardModule: LeaderboardModule
     
     /**
@@ -16772,12 +17694,21 @@ declare namespace _palette {
     */
     let MapModule: MapModule
     
+    /**
+    * Used with `MappingSession` to describe the session to be created.
+    */
     let MappingOptions: MappingOptions
     
+    /**
+    * Used with the `LocatedAtComponent` to map the current physical location.
+    */
     let MappingSession: MappingSession
     
     let MappingSession_MappingThrottling: MappingSession.MappingThrottling
     
+    /**
+    * A texture of the map at the given location of a `LocationAsset`.
+    */
     let MapTextureProvider: MapTextureProvider
     
     /**
@@ -16931,43 +17862,66 @@ declare namespace _palette {
     let MLComponent: MLComponent
     
     /**
+    * A Motion Controller allows to communicate motion data and touch events from an external device to Spectacles, as well as haptic feedback requests from Spectacles to an external device. Currently, the API supports Mobile Controller only, allowing one motion controller to be connected at a time. Developers use the Motion Controller API through the `Asset.MotionControllerModule` in Lens Studio.
+    
+    
     * @wearableOnly
     */
     let MotionController: MotionController
     
     /**
+    * Defines a set of haptic feedback patterns that can be requested.
+    
+    
     * @wearableOnly
     */
     let MotionController_HapticFeedback: MotionController.HapticFeedback
     
     /**
+    * Describes a request for haptic feedback.
+    
     * @wearableOnly
     */
     let MotionController_HapticRequest: MotionController.HapticRequest
     
     /**
+    * Settings for configuring a motion controller.
+    
+    
     * @wearableOnly
     */
     let MotionController_MotionControllerOptions: MotionController.MotionControllerOptions
     
     /**
+    * Enum for describing the motion type.
+    
     * @wearableOnly
     */
     let MotionController_MotionType: MotionController.MotionType
     
+    /**
+    * Settings for configuring a motion controller.
+    */
     let MotionController_Options: MotionController.Options
     
     /**
+    * Enum that defines a current state of a touch interaction with the touchpad of the motion controller.
+    
     * @wearableOnly
     */
     let MotionController_TouchPhase: MotionController.TouchPhase
     
     /**
+    * Describes Motion Controller tracking quality state, whether the data received from the Motion Controller is accurate or not.
+    
+    
     * @wearableOnly
     */
     let MotionController_TrackingQuality: MotionController.TrackingQuality
     
     /**
+    * A Lens Studio module that provides access to Motion Controller.
+    
     * @wearableOnly
     */
     let MotionControllerModule: MotionControllerModule
@@ -17109,11 +18063,15 @@ declare namespace _palette {
     let OverlapStayEventArgs: OverlapStayEventArgs
     
     /**
+    * The arguments of the PalmTapDown event on `GestureModule`
+    
     * @wearableOnly
     */
     let PalmTapDownArgs: PalmTapDownArgs
     
     /**
+    * The arguments of the PalmTapUp event on `GestureModule`
+    
     * @wearableOnly
     */
     let PalmTapUpArgs: PalmTapUpArgs
@@ -17175,16 +18133,22 @@ declare namespace _palette {
     let Physics_WorldSettingsAsset: Physics.WorldSettingsAsset
     
     /**
+    * The arguments of the PinchDown event on `GestureModule`
+    
     * @wearableOnly
     */
     let PinchDownArgs: PinchDownArgs
     
     /**
+    * The arguments of the PinchStrength event on `GestureModule`
+    
     * @wearableOnly
     */
     let PinchStrengthArgs: PinchStrengthArgs
     
     /**
+    * The arguments of the PinchUp event on `GestureModule`
+    
     * @wearableOnly
     */
     let PinchUpArgs: PinchUpArgs
@@ -17204,6 +18168,9 @@ declare namespace _palette {
     
     let PitchShifterBuilder: PitchShifterBuilder
     
+    /**
+    * Used with `AnimationClip` to describe how the clip should be played.
+    */
     let PlaybackMode: PlaybackMode
     
     /**
@@ -17317,17 +18284,23 @@ declare namespace _palette {
     let RemoteReferenceAsset: RemoteReferenceAsset
     
     /**
-    * @snapOsOnly
+    * A http request which can be sent using the `RemoteServiceModule`.
+    
+    * @wearableOnly
     */
     let RemoteServiceHttpRequest: RemoteServiceHttpRequest
     
     /**
-    * @snapOsOnly
+    * The http method which should be used to send this http request.
+    
+    * @wearableOnly
     */
     let RemoteServiceHttpRequest_HttpRequestMethod: RemoteServiceHttpRequest.HttpRequestMethod
     
     /**
-    * @snapOsOnly
+    * The response returned by a `RemoteServiceHttpRequest` call.
+    
+    * @wearableOnly
     */
     let RemoteServiceHttpResponse: RemoteServiceHttpResponse
     
@@ -17636,6 +18609,9 @@ declare namespace _palette {
     */
     let SurfaceTrackingResetEvent: SurfaceTrackingResetEvent
     
+    /**
+    * Used with `AnimationKeyFrame`.
+    */
     let TangentType: TangentType
     
     /**
@@ -17886,6 +18862,16 @@ declare namespace _palette {
     let UpdateEvent: UpdateEvent
     
     /**
+    * Provides a render object of the upper body, without the head. Unlike `BodyMesh` which handles the whole body, this model is optimized to work better with `FaceMesh` and selfie use cases.
+    */
+    let UpperBodyRenderObjectProvider: UpperBodyRenderObjectProvider
+    
+    /**
+    * An asset containing the upper body tracker. It is optimized to track with the face and in selfie use cases.
+    */
+    let UpperBodyTrackingAsset: UpperBodyTrackingAsset
+    
+    /**
     * Provides information about the user such as display name, birthday, and current weather. Accessible through `global.userContextSystem`.
     
     * All callbacks will execute as soon as the requested information is available. In some rare cases, the requested information may be completely unavailable, and the callback will never occur.
@@ -18108,11 +19094,15 @@ declare namespace _palette {
     let WorldOptions: WorldOptions
     
     /**
+    * The result of the hitTest method call. This includes the world position of the hit, the world normal of the hit. Returns `null` if no intersection with environment was detected.
+    
     * @wearableOnly
     */
     let WorldQueryHitTestResult: WorldQueryHitTestResult
     
     /**
+    * Provides access to WorldQuery api which performs hit test for real surfaces to sample the depth and normal at a certain location.
+    
     * @wearableOnly
     */
     let WorldQueryModule: WorldQueryModule
