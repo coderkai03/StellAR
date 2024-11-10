@@ -1,7 +1,40 @@
 CollapsedEntities:
   type: stringset
   value:
-    size: 1
+    size: 34
     values:
+      - Animation Mixer Layer.animationMixerLayer
+      - Base.png
+      - Behavior.js
+      - Body Tracking 3D.bodyTracking3D
+      - Box.mesh
+      - Cylinder.mesh
+      - Generative 3D Component 1.lsc
+      - Generative 3D Component.lsc
+      - Image 1.mat
+      - Image.mat
+      - Image.png
+      - ImageMaterial 3.mat
+      - ImageMaterial 4.mat
+      - ImageMaterial 5.mat
+      - ImageMaterial.mat
+      - MaterialParams.png
+      - Normal.png
+      - Object 1.prefab
+      - Object Prefab.prefab
+      - Object.prefab
+      - PBR 1.mat
+      - PBR.mat
+      - Scene Manager.lsc
       - Scripts/Countdown.js
+      - Sphere.mesh
+      - Texture.prefab
+      - flat 1.ss_graph
+      - flat.ss_graph
+      - icons.jpg
+      - image_unlit.ss_graph
+      - pbr 1.ss_graph
+      - pbr.ss_graph
+      - spreadsheet image 1.png
+      - spreadsheet image.png
   options: 4

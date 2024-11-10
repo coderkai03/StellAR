@@ -1,5 +1,6 @@
 ExternalSources:
   type: "std::map<class Es::Uuid,class Es::Path,struct std::less<class Es::Uuid>,class std::allocator<struct std::pair<class Es::Uuid const ,class Es::Path> > >"
   value:
-    []
+    - 194acd89-983f-4316-a3bf-fdccab9ef8a8: "C:/Users/tanvi/Downloads/icons.jpg"
+    - 9625e175-e541-4b2c-9c7b-b960b10218ae: "C:/Users/tanvi/Downloads/spreadsheet image.png"
   options: 4
