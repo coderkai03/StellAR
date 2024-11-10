@@ -28,15 +28,15 @@ lastPosition:
   options: 4
 lastRotation:
   type: vec3
-  value: {x: 0.000000, y: 0.000000, z: 0.000000}
+  value: {x: 0.000000, y: -0.000000, z: 0.000000}
   options: 4
 mirrorHorizontally:
   type: bool
   value: false
   options: 4
 previewSource:
-  type: "Es::Path"
-  value: "C:/Program Files/Snap Inc/Lens Studio/PreviewResources.bundle/Video/Idle/Idle.mp4"
+  type: string
+  value: PreviewResources.bundle/Video/Idle/Idle.mp4
   options: 4
 previewType:
   type: string
